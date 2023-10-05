@@ -71,7 +71,6 @@ class SplayTree {
         }
     }
 
-
     // Helper method for in-order traversal to collect all words
     private void inOrderTraversalCollectWords(Node node, List<String> wordList) {
         if (node != null) {
@@ -178,6 +177,7 @@ class SplayTree {
 }
 
 public class SpellChecker {
+
     private static void populateDictionary(SplayTree dictionary) {
         // Add correct words to the dictionary
         dictionary.insert("apple");
@@ -187,22 +187,57 @@ public class SpellChecker {
         // Add more words as needed
     }
 
-    private static String findClosestMatch(String input, SplayTree splayTree) {
-        // Initialize variables to keep track of the best match
+
+    private static String findClosestMatch(String input, SplayTree dictionary, int maxDistanceThreshold) {
         String closestMatch = null;
         int minDistance = Integer.MAX_VALUE;
 
-        // Perform a search in the dictionary for suggestions
-        for (String word : splayTree.getAllWords()) {
+        for (String word : dictionary.getAllWords()) {
             int distance = computeLevenshteinDistance(input, word);
-            if (distance < minDistance) {
+            if (distance < minDistance && distance <= maxDistanceThreshold) {
                 minDistance = distance;
                 closestMatch = word;
             }
         }
 
-        // Return the closest match if found
         return closestMatch;
+    }
+
+    private static List<String> findClosestMatches(String input, SplayTree dictionary, int maxDistanceThreshold, int maxMatches) {
+        List<String> closestMatches = new ArrayList<>(maxMatches); // Initialize with empty strings
+        for (int i = 0; i < maxMatches; i++) {
+            closestMatches.add(""); // Add empty strings as placeholders
+        }
+        int[] minDistances = new int[maxMatches];
+        for (int i = 0; i < maxMatches; i++) {
+            minDistances[i] = Integer.MAX_VALUE;
+        }
+
+        for (String word : dictionary.getAllWords()) {
+            int distance = computeLevenshteinDistance(input, word);
+            if (distance <= maxDistanceThreshold) {
+                for (int i = 0; i < maxMatches; i++) {
+                    if (distance < minDistances[i]) {
+                        for (int j = maxMatches - 1; j > i; j--) {
+                            minDistances[j] = minDistances[j - 1];
+                            closestMatches.set(j, closestMatches.get(j - 1));
+                        }
+                        minDistances[i] = distance;
+                        closestMatches.set(i, word);
+                        break;
+                    }
+                }
+            }
+        }
+
+        List<String> validMatches = new ArrayList<>();
+        for (int i = 0; i < maxMatches; i++) {
+            if (!closestMatches.get(i).isEmpty() && minDistances[i] != Integer.MAX_VALUE) {
+                validMatches.add(closestMatches.get(i));
+            }
+        }
+
+        return validMatches;
     }
 
     private static int computeLevenshteinDistance(String s1, String s2) {
@@ -226,6 +261,7 @@ public class SpellChecker {
         return dp[m][n];
     }
 
+
     public static void main(String[] args) {
         SplayTree splayTree = new SplayTree();
 
@@ -234,6 +270,7 @@ public class SpellChecker {
 
         Scanner scanner = new Scanner(System.in);
 
+
         while (true) {
             System.out.print("Enter a word to check its spelling (or 'exit' to quit): ");
             String userInput = scanner.nextLine().trim().toLowerCase();
@@ -241,18 +278,36 @@ public class SpellChecker {
             if (userInput.equals("exit")) {
                 break;
             }
+
+//            System.out.print("Enter the maximum Levenshtein distance threshold (e.g., 1, 2, etc.): ");
+//            int maxDistanceThreshold = Integer.parseInt(scanner.nextLine());
+            int maxDistanceThreshold = 2;
+            int maxMatches = 2;
+
             if (splayTree.search(userInput)) {
                 System.out.println("The word '" + userInput + "' is spelled correctly.");
             } else {
-                String suggestion = findClosestMatch(userInput, splayTree);
-                if (suggestion != null) {
+                List<String> suggestions = findClosestMatches(userInput, splayTree, maxDistanceThreshold, maxMatches); // Suggest up to 2 matches
+                if (!suggestions.isEmpty()) {
                     System.out.println("The word '" + userInput + "' is not found in the dictionary.");
-                    System.out.println("Did you mean '" + suggestion + "'?");
+                    System.out.println("Did you mean:");
+                    for (String suggestion : suggestions) {
+                        System.out.println("  - '" + suggestion + "'");
+                    }
                 } else {
-                    System.out.println("The word '" + userInput + "' is not found in the dictionary, and no suggestions were found.");
+                    System.out.println("The word '" + userInput + "' is not found in the dictionary.");
+                    System.out.print("Do you want to add it to the dictionary? (yes/no): ");
+                    String addWord = scanner.nextLine().trim().toLowerCase();
+                    if (addWord.equals("yes")) {
+                        splayTree.insert(userInput);
+                        System.out.println("The word '" + userInput + "' has been added to the dictionary.");
+                    } else {
+                        System.out.println("The word '" + userInput + "' was not added to the dictionary.");
+                    }
                 }
             }
         }
+
         scanner.close();
     }
 }
