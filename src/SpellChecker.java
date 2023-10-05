@@ -279,8 +279,6 @@ public class SpellChecker {
                 break;
             }
 
-//            System.out.print("Enter the maximum Levenshtein distance threshold (e.g., 1, 2, etc.): ");
-//            int maxDistanceThreshold = Integer.parseInt(scanner.nextLine());
             int maxDistanceThreshold = 2;
             int maxMatches = 2;
 
