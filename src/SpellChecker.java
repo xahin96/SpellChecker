@@ -203,7 +203,7 @@ public class SpellChecker {
         // Add more words as needed
     }
 
-
+    // Find the closest match for a given word in the dictionary
     private static String findClosestMatch(String input, SplayTree dictionary, int maxDistanceThreshold) {
         String closestMatch = null;
         int minDistance = Integer.MAX_VALUE;
@@ -219,6 +219,7 @@ public class SpellChecker {
         return closestMatch;
     }
 
+    // Find a list of closest matches for a given word in the dictionary
     private static List<String> findClosestMatches(String input, SplayTree dictionary, int maxDistanceThreshold, int maxMatches) {
         List<String> closestMatches = new ArrayList<>(maxMatches); // Initialize with empty strings
         for (int i = 0; i < maxMatches; i++) {
@@ -256,6 +257,7 @@ public class SpellChecker {
         return validMatches;
     }
 
+    // Compute the Levenshtein distance between two strings
     private static int computeLevenshteinDistance(String s1, String s2) {
         int m = s1.length();
         int n = s2.length();
@@ -277,7 +279,6 @@ public class SpellChecker {
         return dp[m][n];
     }
 
-
     public static void main(String[] args) {
         SplayTree splayTree = new SplayTree();
 
@@ -286,7 +287,7 @@ public class SpellChecker {
 
         Scanner scanner = new Scanner(System.in);
 
-        // Welcome page design
+        // Welcome message
         System.out.println("   _____            ____   ________              __            ");
         System.out.println("  / ___/____  ___  / / /  / ____/ /_  ___  _____/ /_____  _____");
         System.out.println("  \\__ \\/ __ \\/ _ \\/ / /  / /   / __ \\/ _ \\/ ___/ //_/ _ \\/ ___/");
@@ -302,7 +303,7 @@ public class SpellChecker {
             String userInput = scanner.nextLine().trim().toLowerCase();
 
             if (userInput.equals("exit")) {
-                System.out.print("Thank you for using Spell Checker! Come again :)");
+                System.out.print("Thank you for using Spell Checker! Goodbye :)");
                 break;
             }
 
@@ -310,7 +311,7 @@ public class SpellChecker {
             // The higher the number, the more accurate match is being searched
             int maxDistanceThreshold = 2;
 
-            // Looks for the number of matches found in dictionary
+            // Looks for the number of matches found in the dictionary
             // Set to 2 for mimicking the functionality of MS Word
             int maxMatches = 2;
 
