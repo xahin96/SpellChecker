@@ -15,143 +15,134 @@ class SplayTree {
 
     Node root;
 
-    // Zig rotation
-    private void zig(Node x) {
-        Node y = x.parent;
-        if (x == y.left) {
-            y.left = x.right;
-            if (x.right != null) {
-                x.right.parent = y;
+    // Rotate a node to the root position
+    private void rotateToRoot(Node currentNode) {
+        Node parentNode = currentNode.parent;
+        if (currentNode == parentNode.left) {
+            parentNode.left = currentNode.right;
+            if (currentNode.right != null) {
+                currentNode.right.parent = parentNode;
             }
-            x.right = y;
+            currentNode.right = parentNode;
         } else {
-            y.right = x.left;
-            if (x.left != null) {
-                x.left.parent = y;
+            parentNode.right = currentNode.left;
+            if (currentNode.left != null) {
+                currentNode.left.parent = parentNode;
             }
-            x.left = y;
+            currentNode.left = parentNode;
         }
-        x.parent = y.parent;
-        y.parent = x;
-        if (x.parent != null) {
-            if (y == x.parent.left) {
-                x.parent.left = x;
+        currentNode.parent = parentNode.parent;
+        parentNode.parent = currentNode;
+        if (currentNode.parent != null) {
+            if (parentNode == currentNode.parent.left) {
+                currentNode.parent.left = currentNode;
             } else {
-                x.parent.right = x;
+                currentNode.parent.right = currentNode;
             }
         } else {
-            root = x;
+            root = currentNode;
         }
     }
 
-    // Zig-zig rotation
-    private void zigZig(Node x) {
-        zig(x.parent);
-        zig(x);
-    }
-
-    // Zig-zag rotation
-    private void zigZag(Node x) {
-        zig(x);
-        zig(x);
-    }
-
-    // Splay operation
-    private void splay(Node x) {
-        while (x.parent != null) {
-            Node parent = x.parent;
-            Node grandparent = parent.parent;
-            if (grandparent == null) {
-                zig(x);
-            } else if ((parent.left == x && grandparent.left == parent) || (parent.right == x && grandparent.right == parent)) {
-                zigZig(x);
+    // Splay the node to the root
+    private void splayToRoot(Node currentNode) {
+        while (currentNode.parent != null) {
+            Node parentNode = currentNode.parent;
+            Node grandparentNode = parentNode.parent;
+            if (grandparentNode == null) {
+                rotateToRoot(currentNode);
+            } else if ((parentNode.left == currentNode && grandparentNode.left == parentNode)
+                    || (parentNode.right == currentNode && grandparentNode.right == parentNode)) {
+                rotateToRoot(parentNode);
+                rotateToRoot(currentNode);
             } else {
-                zigZag(x);
+                rotateToRoot(currentNode);
+                rotateToRoot(currentNode);
             }
         }
     }
 
     // Helper method for in-order traversal to collect all words
-    private void inOrderTraversalCollectWords(Node node, List<String> wordList) {
+    private void collectWordsInOrder(Node node, List<String> wordList) {
         if (node != null) {
-            inOrderTraversalCollectWords(node.left, wordList);
+            collectWordsInOrder(node.left, wordList);
             wordList.add(node.key);
-            inOrderTraversalCollectWords(node.right, wordList);
+            collectWordsInOrder(node.right, wordList);
         }
     }
 
     // Get all words from the tree using in-order traversal
     public List<String> getAllWords() {
         List<String> wordList = new ArrayList<>();
-        inOrderTraversalCollectWords(root, wordList);
+        collectWordsInOrder(root, wordList);
         return wordList;
     }
 
-    // Insert a new key
-    public void insert(String key) {
-        Node newNode = new Node(key);
+    // Insert a new word into the tree
+    public void insert(String word) {
+        Node newNode = new Node(word);
         if (root == null) {
             root = newNode;
             return;
         }
 
-        Node current = root;
-        Node parent = null;
-        while (current != null) {
-            parent = current;
-            if (key.compareTo(current.key) < 0) {
-                current = current.left;
-            } else if (key.compareTo(current.key) > 0) {
-                current = current.right;
+        Node currentNode = root;
+        Node parentNode = null;
+        while (currentNode != null) {
+            parentNode = currentNode;
+            if (word.compareTo(currentNode.key) < 0) {
+                currentNode = currentNode.left;
+            } else if (word.compareTo(currentNode.key) > 0) {
+                currentNode = currentNode.right;
             } else {
-                // Key already exists; perform splay to make it the root
-                splay(current);
+                // Word already exists; perform splay to make it the root
+                splayToRoot(currentNode);
                 return;
             }
         }
 
-        if (key.compareTo(parent.key) < 0) {
-            parent.left = newNode;
+        if (word.compareTo(parentNode.key) < 0) {
+            parentNode.left = newNode;
         } else {
-            parent.right = newNode;
+            parentNode.right = newNode;
         }
-        newNode.parent = parent;
+        newNode.parent = parentNode;
 
         // Perform splay to make the new node the root
-        splay(newNode);
+        splayToRoot(newNode);
     }
 
-    // Search for a key
-    public boolean search(String key) {
-        Node node = searchNode(key);
+    // Search for a word in the tree
+    public boolean search(String word) {
+        Node node = searchNode(word);
         if (node != null) {
-            splay(node); // Splay the found node to the root
+            splayToRoot(node); // Splay the found node to the root
             return true;
         }
         return false;
     }
 
-    // Helper function to search for a key and return the node
-    private Node searchNode(String key) {
-        Node current = root;
-        while (current != null) {
-            int cmp = key.compareTo(current.key);
+    // Helper function to search for a word and return the node
+    private Node searchNode(String word) {
+        Node currentNode = root;
+        while (currentNode != null) {
+            int cmp = word.compareTo(currentNode.key);
             if (cmp == 0) {
-                return current;
+                return currentNode;
             } else if (cmp < 0) {
-                current = current.left;
+                currentNode = currentNode.left;
             } else {
-                current = current.right;
+                currentNode = currentNode.right;
             }
         }
         return null;
     }
 
-    // Delete a key
-    public void delete(String key) {
-        Node node = searchNode(key);
+    // Delete a word from the tree
+    public void delete(String word) {
+        Node node = searchNode(word);
         if (node != null) {
-            splay(node); // Splay the found node to the root
+            splayToRoot(node); // Splay the found node to the root
 
             // Remove the root
             if (node.left == null) {
@@ -163,13 +154,13 @@ class SplayTree {
                 Node rightSubtree = node.right;
                 root = node.left;
                 node.left.parent = null;
-                Node current = root;
-                while (current.right != null) {
-                    current = current.right;
+                Node currentNode = root;
+                while (currentNode.right != null) {
+                    currentNode = currentNode.right;
                 }
-                current.right = rightSubtree;
+                currentNode.right = rightSubtree;
                 if (rightSubtree != null) {
-                    rightSubtree.parent = current;
+                    rightSubtree.parent = currentNode;
                 }
             }
         }
@@ -179,7 +170,7 @@ class SplayTree {
 public class SpellChecker {
 
     private static void populateDictionary(SplayTree dictionary) {
-        // Add correct words to the dictionary
+        // Adding correct words to the dictionary
         dictionary.insert("apple");
         dictionary.insert("banana");
         dictionary.insert("cherry");
@@ -200,27 +191,11 @@ public class SpellChecker {
         dictionary.insert("frequently");
         dictionary.insert("used");
         dictionary.insert("words");
-        // Add more words as needed
+        // Please add more words as needed
     }
 
-    // Find the closest match for a given word in the dictionary
-    private static String findClosestMatch(String input, SplayTree dictionary, int maxDistanceThreshold) {
-        String closestMatch = null;
-        int minDistance = Integer.MAX_VALUE;
-
-        for (String word : dictionary.getAllWords()) {
-            int distance = computeLevenshteinDistance(input, word);
-            if (distance < minDistance && distance <= maxDistanceThreshold) {
-                minDistance = distance;
-                closestMatch = word;
-            }
-        }
-
-        return closestMatch;
-    }
-
-    // Find a list of closest matches for a given word in the dictionary
-    private static List<String> findClosestMatches(String input, SplayTree dictionary, int maxDistanceThreshold, int maxMatches) {
+    // Find a list of the closest matching words in the dictionary
+    private static List<String> findClosestMatchingWords(String input, SplayTree dictionary, int maxDistanceThreshold, int maxMatches) {
         List<String> closestMatches = new ArrayList<>(maxMatches); // Initialize with empty strings
         for (int i = 0; i < maxMatches; i++) {
             closestMatches.add(""); // Add empty strings as placeholders
@@ -231,7 +206,7 @@ public class SpellChecker {
         }
 
         for (String word : dictionary.getAllWords()) {
-            int distance = computeLevenshteinDistance(input, word);
+            int distance = calculateLevenshteinDistance(input, word);
             if (distance <= maxDistanceThreshold) {
                 for (int i = 0; i < maxMatches; i++) {
                     if (distance < minDistances[i]) {
@@ -257,8 +232,8 @@ public class SpellChecker {
         return validMatches;
     }
 
-    // Compute the Levenshtein distance between two strings
-    private static int computeLevenshteinDistance(String s1, String s2) {
+    // Calculate the Levenshtein distance between two strings
+    private static int calculateLevenshteinDistance(String s1, String s2) {
         int m = s1.length();
         int n = s2.length();
         int[][] dp = new int[m + 1][n + 1];
@@ -318,7 +293,7 @@ public class SpellChecker {
             if (splayTree.search(userInput)) {
                 System.out.println("The word '" + userInput + "' is spelled correctly.");
             } else {
-                List<String> suggestions = findClosestMatches(userInput, splayTree, maxDistanceThreshold, maxMatches); // Suggest up to 2 matches
+                List<String> suggestions = findClosestMatchingWords(userInput, splayTree, maxDistanceThreshold, maxMatches); // Suggest up to 2 matches
                 if (!suggestions.isEmpty()) {
                     System.out.println("The word '" + userInput + "' is not found in the dictionary.");
                     System.out.println("Did you mean:");
