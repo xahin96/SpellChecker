@@ -184,6 +184,22 @@ public class SpellChecker {
         dictionary.insert("banana");
         dictionary.insert("cherry");
         dictionary.insert("date");
+        dictionary.insert("the");
+        dictionary.insert("and");
+        dictionary.insert("is");
+        dictionary.insert("it");
+        dictionary.insert("to");
+        dictionary.insert("in");
+        dictionary.insert("of");
+        dictionary.insert("for");
+        dictionary.insert("are");
+        dictionary.insert("this");
+        dictionary.insert("spell");
+        dictionary.insert("checker");
+        dictionary.insert("example");
+        dictionary.insert("frequently");
+        dictionary.insert("used");
+        dictionary.insert("words");
         // Add more words as needed
     }
 
@@ -270,16 +286,32 @@ public class SpellChecker {
 
         Scanner scanner = new Scanner(System.in);
 
+        // Welcome page design
+        System.out.println("   _____            ____   ________              __            ");
+        System.out.println("  / ___/____  ___  / / /  / ____/ /_  ___  _____/ /_____  _____");
+        System.out.println("  \\__ \\/ __ \\/ _ \\/ / /  / /   / __ \\/ _ \\/ ___/ //_/ _ \\/ ___/");
+        System.out.println(" ___/ / /_/ /  __/ / /  / /___/ / / /  __/ /__/ ,< /  __/ /    ");
+        System.out.println("/____/ .___/\\___/_/_/   \\____/_/ /_/\\___/\\___/_/|_|\\___/_/     ");
+        System.out.println("    /_/                                                        ");
+        System.out.print("\n~Welcome to the Spell Checker! Start writing to check your spelling game.~ \n\n");
 
         while (true) {
             System.out.print("Enter a word to check its spelling (or 'exit' to quit): ");
+
+            // Taking user input
             String userInput = scanner.nextLine().trim().toLowerCase();
 
             if (userInput.equals("exit")) {
+                System.out.print("Thank you for using Spell Checker! Come again :)");
                 break;
             }
 
+            // Levenshtein distance accuracy threshold parameter.
+            // The higher the number, the more accurate match is being searched
             int maxDistanceThreshold = 2;
+
+            // Looks for the number of matches found in dictionary
+            // Set to 2 for mimicking the functionality of MS Word
             int maxMatches = 2;
 
             if (splayTree.search(userInput)) {
